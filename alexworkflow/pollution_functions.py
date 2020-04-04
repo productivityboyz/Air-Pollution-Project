@@ -63,3 +63,68 @@ def get_data(location_input):
 
 def test_function():
     print('hello')
+    
+    
+# function to let you decide date range to plot, resample type, line or bar, and aggregate type
+def plot_date_range(start,end,resample_string,plottype,aggregate):
+    from datetime import datetime
+    '''
+    Parameters:
+    start = date string in format YYYY-MM-DD
+    end = date string in format YYYY-MM-DD
+    resample_string = string of 'H'/'D'/'W'/'M'
+    plottype = string 'line' or 'bar'
+    aggregate = string 'sum','average','median'
+    '''
+    resample_string = resample_string.upper() # just in case user were to input h instead of H
+    
+    # for title of chart
+    if resample_string == 'H':
+        title_string = 'Hourly'
+    elif resample_string == 'D':
+        title_string = 'Daily'
+    elif resample_string == 'W':
+        title_string = 'Weekly'
+    elif resample_string == 'M':
+        title_string = 'Monthly'
+    
+    # dates to plot 
+    start = datetime.strptime(start,'%Y-%m-%d')
+    end = datetime.strptime(end,'%Y-%m-%d')
+    plt.style.use('seaborn')
+    # resampling based on input
+    if resample_string == 'H':
+        z = df_all.loc[start:end]
+        if plottype == 'line':
+            x = z[['Nitric oxide','Nitrogen dioxide']].plot(figsize=(15,10))
+        elif plottype == 'bar':
+            x = z[['Nitric oxide','Nitrogen dioxide']].plot.bar(figsize=(15,10))
+        x.set_title('Hourly Emissions Between {} and {}'.format(start,end))
+        x.set_ylim(0)
+    else:    
+        z = df_all.loc[start:end]
+        if plottype == 'line':
+            if aggregate == 'sum':
+                x = z[['Nitric oxide','Nitrogen dioxide']].resample(resample_string).sum().plot(figsize=(15,10))
+            elif aggregate == 'mean':
+                x = z[['Nitric oxide','Nitrogen dioxide']].resample(resample_string).mean().plot(figsize=(15,10))
+            elif aggregate == 'median': 
+                x = z[['Nitric oxide','Nitrogen dioxide']].resample(resample_string).median().plot(figsize=(15,10))
+            x.set_title('{} {} Emissions Between {} and {} for {}'.format(aggregate.title(),title_string,start,end,location_string))
+            x.set_ylim(0)
+        elif plottype == 'bar':
+            if aggregate == 'sum':
+                x = z[['Nitric oxide','Nitrogen dioxide']].resample(resample_string).sum().plot.bar(figsize=(15,10))
+            elif aggregate == 'mean':
+                x = z[['Nitric oxide','Nitrogen dioxide']].resample(resample_string).mean().plot.bar(figsize=(15,10))
+            elif aggregate == 'median':
+                x = z[['Nitric oxide','Nitrogen dioxide']].resample(resample_string).median().plot.bar(figsize=(15,10))
+            x.set_title('{} {} Emissions Between {} and {} for {}'.format(aggregate.title(),title_string,start,end,location_string))
+            x.set_ylim(0)
+            
+            #plt.xticks(np.arange(3),['Jan 2020','Feb 2020','Mar 2020'])
+            #plt.xticks(rotation=1)
+            #plt.title('Monthly Emissions in 2020')
+            #plt.xlabel('')
+            plt.ylabel('Total Emissions Measured (ugm$^3$)')
+            plt.legend(loc='upper left')
