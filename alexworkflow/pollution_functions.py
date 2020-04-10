@@ -128,3 +128,153 @@ def plot_date_range(start,end,resample_string,plottype,aggregate):
             #plt.xlabel('')
             plt.ylabel('Total Emissions Measured (ugm$^3$)')
             plt.legend(loc='upper left')
+
+
+def year_comparison2(dfs = [df_2020,df_2019,df_2018,df_2017],start,end,resample_string,years_of_data):
+    global df_2020, df_2019, df_2018, df_2017
+    '''
+    Parameters:
+    start = string of date in format 'MM-DD'
+    end = string of date in format 'MM-DD'
+    resample_string = 'H','D','W','M'
+    years_of_data = 1, 2, 3 or 4, determines how many years to plot
+    '''
+   
+    # below is hideous but I'm just doing it in this dumb way because I know it'll work
+    # gets you start and end dates for each year
+    start_2020 = '2020-' + start
+    start_2020 = pd.to_datetime(start_2020)
+    end_2020 = '2020-' + end
+    end_2020 = pd.to_datetime(end_2020)
+    
+    start_2019 = '2019-' + start
+    start_2019 = pd.to_datetime(start_2019)
+    end_2019 = '2019-' + end
+    end_2019 = pd.to_datetime(end_2019)
+       
+    start_2018 = '2018-' + start
+    start_2018 = pd.to_datetime(start_2018)
+    end_2018 = '2018-' + end
+    end_2018 = pd.to_datetime(end_2018)
+    
+    start_2017 = '2017-' + start
+    start_2017 = pd.to_datetime(start_2017)
+    end_2017 = '2017-' + end
+    end_2017 = pd.to_datetime(end_2017)
+    
+    ### MASKS ###
+    # 2020
+    mask = (df_2020['Date Time'] >= start_2020) & (df_2020['Date Time'] <= end_2020) # REPLACE MASKS WITH .LOC!
+    df_2020_ = df_2020.loc[mask]
+    # 2019
+    mask = (df_2019['Date Time'] >= start_2019) & (df_2019['Date Time'] <= end_2019) # REPLACE MASKS WITH .LOC!
+    df_2019_ = df_2019.loc[mask]
+    # 2018
+    mask = (df_2018['Date Time'] >= start_2018) & (df_2018['Date Time'] <= end_2018) # REPLACE MASKS WITH .LOC!
+    df_2018_ = df_2018.loc[mask]
+    # 2017
+    mask = (df_2017['Date Time'] >= start_2017) & (df_2017['Date Time'] <= end_2017) # REPLACE MASKS WITH .LOC!
+    df_2017_ = df_2017.loc[mask]
+    
+    if resample_string=='H':
+        ### Making date time no year column
+        df_2020_['Date Time No Year'] = df_2020_['Date Time'].dt.strftime('%m-%d %H:%M')
+        df_2019_['Date Time No Year'] = df_2019_['Date Time'].dt.strftime('%m-%d %H:%M')
+        df_2018_['Date Time No Year'] = df_2018_['Date Time'].dt.strftime('%m-%d %H:%M')
+        df_2017_['Date Time No Year'] = df_2017_['Date Time'].dt.strftime('%m-%d %H:%M')
+
+        ### Plotting them with date time no year
+        plt.figure(figsize=(15,10))
+        
+        if years_of_data==4:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                        label = '2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+            sns.lineplot(x=df_2019_['Date Time No Year'],y=df_2019_['Nitric oxide'],
+                        label = '2019 Nitric Oxide',linestyle=':',alpha=0.6,color='#775253')
+            sns.lineplot(x=df_2018_['Date Time No Year'],y=df_2018_['Nitric oxide'],
+                        label = '2018 Nitric Oxide',alpha=0.6,linestyle=':',color='#FF9914')
+            sns.lineplot(x=df_2017_['Date Time No Year'],y=df_2017_['Nitric oxide'],
+                        label ='2017 Nitrix Oxide',alpha=0.6,linestyle='-.',color='#EC4E20')
+        
+        elif years_of_data==3:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                    label = '2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+            sns.lineplot(x=df_2019_['Date Time No Year'],y=df_2019_['Nitric oxide'],
+                        label = '2019 Nitric Oxide',linestyle=':',alpha=0.6,color='#775253')
+            sns.lineplot(x=df_2018_['Date Time No Year'],y=df_2018_['Nitric oxide'],
+                        label = '2018 Nitric Oxide',alpha=0.6,linestyle=':',color='#FF9914')
+    
+        elif years_of_data==2:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                    label = '2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+            sns.lineplot(x=df_2019_['Date Time No Year'],y=df_2019_['Nitric oxide'],
+                        label = '2019 Nitric Oxide',linestyle=':',alpha=0.6,color='#775253')
+            
+        elif years_of_data==1:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                    label = '2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+    
+        plt.xticks(rotation=90) # would be great to strip the hours from the x ticks
+        plt.xlabel('')
+        plt.ylabel('Nitric oxide (ugm$^3$)')
+        plt.title('Hourly Total Nitric Oxide Emmisions From Date {} to {} of Each Year'.format(start,end))
+        plt.legend(loc='upper center')
+        plt.xticks('')
+    
+    elif resample_string!='H':
+        ### Resample accordingly (however only by day works)
+        plt.figure(figsize=(15,10))
+        df_2020_ = df_2020_.resample(resample_string).sum()
+        df_2019_ = df_2019_.resample(resample_string).sum()
+        df_2018_ = df_2018_.resample(resample_string).sum()
+        df_2017_ = df_2017_.resample(resample_string).sum()
+                
+        ### Making date time no year column
+        df_2020_['Date Time No Year'] = df_2020_.index.strftime('%m-%d %H:%M')
+        df_2019_['Date Time No Year'] = df_2019_.index.strftime('%m-%d %H:%M')
+        df_2018_['Date Time No Year'] = df_2018_.index.strftime('%m-%d %H:%M')
+        df_2017_['Date Time No Year'] = df_2017_.index.strftime('%m-%d %H:%M')
+        
+        #### Replacing date time as index as removing datatime column 
+        def cleaner(variable):
+            variable.index = variable['Date Time No Year']
+
+        cleaner(df_2020_)
+        cleaner(df_2019_)
+        cleaner(df_2018_)
+        cleaner(df_2017_)
+
+        plt.figure(figsize=(15,10))
+        if years_of_data==4:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                         label='2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+            sns.lineplot(x=df_2019_['Date Time No Year'],y=df_2019_['Nitric oxide'],
+                         label='2019 Nitric Oxide',linestyle=':',alpha=0.6,color='#775253')
+            sns.lineplot(x=df_2018_['Date Time No Year'],y=df_2018_['Nitric oxide'],
+                         label='2018 Nitric Oxide',alpha=0.6,linestyle=':',color='#FF9914')
+            sns.lineplot(x=df_2017_['Date Time No Year'],y=df_2017_['Nitric oxide'],
+                         label='2017 Nitric Oxide',alpha=0.6,linestyle='-.',color='#EC4E20')
+            
+        elif years_of_data==3:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                         label='2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+            sns.lineplot(x=df_2019_['Date Time No Year'],y=df_2019_['Nitric oxide'],
+                         label='2019 Nitric Oxide',linestyle=':',alpha=0.6,color='#775253')
+            sns.lineplot(x=df_2018_['Date Time No Year'],y=df_2018_['Nitric oxide'],
+                         label='2018 Nitric Oxide',alpha=0.6,linestyle=':',color='#FF9914')
+
+        elif years_of_data==2:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                         label='2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+            sns.lineplot(x=df_2019_['Date Time No Year'],y=df_2019_['Nitric oxide'],
+                         label='2019 Nitric Oxide',linestyle=':',alpha=0.6,color='#775253')
+
+        elif years_of_data==1:
+            sns.lineplot(x=df_2020_['Date Time No Year'],y=df_2020_['Nitric oxide'],
+                         label='2020 Nitric Oxide',linestyle='-',marker='o',alpha=1,color='#2C497F')
+
+        plt.xticks(rotation=90) # would be great to strip the hours from the x ticks
+        plt.xlabel('')
+        plt.ylabel('Nitric oxide (ugm$^3$)')
+        plt.title('Daily Total Nitric Oxide Emmisions From Date {} to {} of Each Year'.format(start,end))
+        plt.legend(loc='upper center')
